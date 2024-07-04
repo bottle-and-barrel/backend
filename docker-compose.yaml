@@ -1,0 +1,29 @@
+version: '4.5'
+
+services:
+  bnb_pg:
+    image: postgres:16.2-alpine3.19
+    restart: always
+    volumes:
+      - bnb_pg_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - '${POSTGRES_PORT}:5432'
+
+  bnb_minio:
+    image: minio/minio:RELEASE.2024-03-30T09-41-56Z.fips
+    container_name: minio
+    restart: always
+    volumes:
+      - bnb_minio_data:/data
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    env_file:
+      - .env
+    command: server /data --console-address ":9001"
+
+volumes:
+  bnb_pg_data:
+  bnb_minio_data:
