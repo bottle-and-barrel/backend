@@ -6,3 +6,186 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id         String    @id
+  lastName   String    @map("last_name")
+  firstName  String    @map("first_name")
+  middleName String    @map("middle_name")
+  email      String    @unique
+  phone      String    @unique
+  password   String
+  cart       Cart[]
+  orders     Orders[]
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime? @map("updated_at")
+
+  @@map("users")
+}
+
+model Image {
+  id             String         @id
+  galleryEntries GalleryEntry[]
+  promo          Promo[]
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime?      @map("updated_at")
+
+  @@map("images")
+}
+
+model Manufacturer {
+  id        String    @id
+  name      String
+  address   String
+  product   Product[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  @@map("manufacturer")
+}
+
+model Category {
+  id        BigInt    @id @default(autoincrement())
+  name      String
+  product   Product[]
+  fields    Field[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  @@map("categories")
+}
+
+model Product {
+  id             String         @id
+  price          Decimal
+  name           String
+  volume         String
+  description    String
+  manufacturerId String         @map("manufacturer_id")
+  manufacturer   Manufacturer   @relation(fields: [manufacturerId], references: [id])
+  categoryId     BigInt         @map("category_id")
+  category       Category       @relation(fields: [categoryId], references: [id])
+  discount       Discount[]
+  galleryEntries GalleryEntry[]
+  promo          PromoItem[]
+  attributes     Attributes[]
+  cart           Cart[]
+  orderItems     OrderItems[]
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime?      @map("updated_at")
+
+  @@map("products")
+}
+
+model Discount {
+  productId String    @unique @map("product_id")
+  product   Product   @relation(fields: [productId], references: [id])
+  percent   Decimal
+  expireAt  DateTime  @map("expire_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  @@map("discounts")
+}
+
+model GalleryEntry {
+  productId String    @map("product_id")
+  product   Product   @relation(fields: [productId], references: [id])
+  imageId   String    @map("image_id")
+  image     Image     @relation(fields: [imageId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  @@id([productId, imageId])
+  @@map("gallery")
+}
+
+model Promo {
+  id          String      @id
+  imageId     String
+  image       Image       @relation(fields: [imageId], references: [id])
+  title       String
+  description String
+  link        String
+  expireAt    DateTime    @map("expire_at")
+  promoItems  PromoItem[]
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime?   @map("updated_at")
+
+  @@map("promo")
+}
+
+model PromoItem {
+  promoId   String    @map("promo_id")
+  productId String    @map("product_id")
+  promo     Promo     @relation(fields: [promoId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  @@id([promoId, productId])
+  @@map("promo_items")
+}
+
+model Field {
+  id         BigInt       @id
+  name       String
+  categoryId BigInt       @map("category_id")
+  category   Category     @relation(fields: [categoryId], references: [id])
+  attributes Attributes[]
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime?    @map("updated_at")
+
+  @@map("fields")
+}
+
+model Attributes {
+  productId String    @map("product_id")
+  fieldId   BigInt    @map("field_id")
+  value     String
+  product   Product   @relation(fields: [productId], references: [id])
+  field     Field     @relation(fields: [fieldId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  @@id([productId, fieldId])
+  @@map("attributes")
+}
+
+model Cart {
+  userId    String    @map("user_id")
+  productId String    @map("product_id")
+  quantity  BigInt
+  user      User      @relation(fields: [userId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  @@id([userId, productId])
+}
+
+model Orders {
+  id         String       @id
+  userId     String       @map("user_id")
+  orderedAt  String       @map("ordered_at")
+  user       User         @relation(fields: [userId], references: [id])
+  OrderItems OrderItems[]
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime?    @map("updated_at")
+
+  @@map("orders")
+}
+
+model OrderItems {
+  orderId   String    @map("order_id")
+  productId String    @map("product_id")
+  price     Decimal
+  quantity  BigInt
+  order     Orders    @relation(fields: [orderId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  @@id([orderId, productId])
+  @@map("order_items")
+}
