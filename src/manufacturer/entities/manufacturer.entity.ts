@@ -1,4 +1,4 @@
-import { BaseModel } from '../../lib/base/base.model';
+import { BaseModel } from '@/lib/base/base.model';
 
 export class Manufacturer extends BaseModel {
   id: string;
