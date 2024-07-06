@@ -5,6 +5,7 @@ import { hash, compare } from 'bcryptjs';
 import { SigninDto } from './dto/signin.dto';
 import { SignupDto } from './dto/signup.dto';
 import { JwtPayload } from './type/jwt.payload';
+import { AuthError, AuthErrorCode } from './errors/auth.error';
 
 @Injectable()
 export class AuthService {
@@ -17,14 +18,16 @@ export class AuthService {
 
   async signin(dto: SigninDto) {
     const user = await this.usersService.findOne(dto.email);
-
     if (!user) {
-      throw new Error('User not found');
+      throw new AuthError(
+        `User with email=${dto.email} not found`,
+        AuthErrorCode.NotFound,
+      );
     }
 
     const isValid = await this.verifyPassword(dto.password, user.password);
     if (!isValid) {
-      throw new Error('Invalid password');
+      throw new AuthError('Invalid password', AuthErrorCode.InvalidCredentials);
     }
 
     const tokens = await this.getTokens(user.id, user.email);
@@ -32,9 +35,14 @@ export class AuthService {
   }
 
   async signup(dto: SignupDto) {
-    const userExists = await this.usersService.findOne(dto.email);
-    if (userExists) {
-      throw new Error('User already exists');
+    const emailCheck = await this.usersService.findOne(dto.email);
+    if (emailCheck) {
+      throw new AuthError('Email already in use', AuthErrorCode.Exists);
+    }
+
+    const phoneCheck = await this.usersService.findOne(dto.phone);
+    if (phoneCheck) {
+      throw new AuthError('Phone already in use', AuthErrorCode.Exists);
     }
 
     const hashedPassword = await this.hashPassword(dto.password);
@@ -60,7 +68,7 @@ export class AuthService {
   async validate() {}
 
   async hashPassword(password: string): Promise<string> {
-    return await hash(password, 10);
+    return await hash(password, process.env.BCRYPT_SALT);
   }
 
   async verifyPassword(password: string, hash: string): Promise<boolean> {

@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 import { uuidv7 } from 'uuidv7';
 import { Prisma } from '@prisma/client';
-import { isEmail } from 'class-validator';
+import { isEmail, isUUID } from 'class-validator';
 
 @Injectable()
 export class UsersService {
@@ -27,7 +27,11 @@ export class UsersService {
 
   findOne(slug: string) {
     const u = this.prisma.user.findUnique({
-      where: isEmail(slug) ? { email: slug } : { id: slug },
+      where: isUUID(slug)
+        ? { id: slug }
+        : isEmail(slug)
+          ? { email: slug }
+          : { phone: slug },
     });
 
     return u;
