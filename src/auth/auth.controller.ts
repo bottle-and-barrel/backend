@@ -6,11 +6,17 @@ import {
   InternalServerErrorException,
   Logger,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { SigninDto } from './dto/signin.dto';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { AuthError, AuthErrorCode } from './errors/auth.error';
+import { AccessTokenGuard } from './guards/access.guard';
+import { Request } from 'express';
+import { JwtPayload } from './type/jwt.payload';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -52,5 +58,13 @@ export class AuthController {
         throw new InternalServerErrorException();
       }
     }
+  }
+
+  @Get('me')
+  @ApiBearerAuth()
+  @UseGuards(AccessTokenGuard)
+  async me(@Req() req: Request) {
+    const u = req.user as JwtPayload;
+    return await this.service.account(u.id);
   }
 }

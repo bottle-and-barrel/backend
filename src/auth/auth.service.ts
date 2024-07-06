@@ -63,6 +63,11 @@ export class AuthService {
 
   async logout() {}
 
+  async account(userId: string) {
+    const u = this.usersService.findOne(userId);
+    return u;
+  }
+
   async refresh() {}
 
   async validate() {}
