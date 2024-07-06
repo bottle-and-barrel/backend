@@ -1,7 +1,7 @@
 import { UsersService } from '@/users/users.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as argon2 from 'argon2';
+import { hash, compare } from 'bcryptjs';
 import { SigninDto } from './dto/signin.dto';
 import { SignupDto } from './dto/signup.dto';
 import { JwtPayload } from './type/jwt.payload';
@@ -60,11 +60,11 @@ export class AuthService {
   async validate() {}
 
   async hashPassword(password: string): Promise<string> {
-    return await argon2.hash(password);
+    return await hash(password, 10);
   }
 
   async verifyPassword(password: string, hash: string): Promise<boolean> {
-    return await argon2.verify(password, hash);
+    return await compare(password, hash);
   }
 
   async getTokens(userId: string, email: string) {
