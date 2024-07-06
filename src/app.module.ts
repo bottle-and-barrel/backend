@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from './prisma/prisma.module';
+import { ConfigModule } from '@nestjs/config';
+import { ManufacturerModule } from './manufacturer/manufacturer.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [ConfigModule.forRoot({ envFilePath: '.env' })],
   controllers: [],
-  providers: [],
+  providers: [PrismaModule, ManufacturerModule],
 })
 export class AppModule {}
