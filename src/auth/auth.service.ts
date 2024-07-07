@@ -6,6 +6,8 @@ import { SigninDto } from './dto/signin.dto';
 import { SignupDto } from './dto/signup.dto';
 import { JwtPayload } from './type/jwt.payload';
 import { AuthError, AuthErrorCode } from './errors/auth.error';
+import { RedisService } from '@/redis/redis.service';
+import { RefreshStrategy } from './strategies/refresh.strategy';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +16,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly redis: RedisService,
   ) {}
 
   async signin(dto: SigninDto) {
@@ -68,9 +71,21 @@ export class AuthService {
     return u;
   }
 
-  async refresh() {}
+  async refresh(userId: string, token: string) {
+    const currentSession = await this.redis.get<string>(userId);
 
-  async validate() {}
+    const isValid = await this.verifyPassword(token, currentSession);
+    if (!isValid) {
+      throw new AuthError(
+        'refresh token not found for user=' + userId,
+        AuthErrorCode.NotFound,
+      );
+    }
+
+    const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
+
+    return await this.getTokens(payload.id, payload.email);
+  }
 
   async hashPassword(password: string): Promise<string> {
     return await hash(password, process.env.BCRYPT_SALT);
@@ -96,6 +111,10 @@ export class AuthService {
         expiresIn: '7d',
       }),
     ]);
+
+    const hashedToken = await this.hashPassword(refreshToken);
+
+    this.redis.set(userId, hashedToken);
 
     return { accessToken, refreshToken };
   }

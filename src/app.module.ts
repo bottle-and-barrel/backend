@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ManufacturerModule } from './manufacturer/manufacturer.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
     ManufacturerModule,
     UsersModule,
     AuthModule,
+    RedisModule,
   ],
   controllers: [],
   providers: [PrismaModule],
