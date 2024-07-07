@@ -71,24 +71,28 @@ export class AuthService {
     return u;
   }
 
-  async refresh(userId: string, token: string) {
-    const currentSession = await this.redis.get<string>(userId);
+  async refresh(payload: JwtPayload, token: string) {
+    const currentSession = await this.redis.get<string>(payload.id);
 
-    const isValid = await this.verifyPassword(token, currentSession);
+    const isValid = token === currentSession;
     if (!isValid) {
       throw new AuthError(
-        'refresh token not found for user=' + userId,
+        'refresh token not found for user=' + payload.id,
         AuthErrorCode.NotFound,
       );
     }
 
-    const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
+    this.logger.verbose('tokens matches', {
+      token,
+      currentSession,
+      isValid,
+    });
 
     return await this.getTokens(payload.id, payload.email);
   }
 
   async hashPassword(password: string): Promise<string> {
-    return await hash(password, process.env.BCRYPT_SALT);
+    return await hash(password, Number(process.env.BCRYPT_SALT));
   }
 
   async verifyPassword(password: string, hash: string): Promise<boolean> {
@@ -112,9 +116,7 @@ export class AuthService {
       }),
     ]);
 
-    const hashedToken = await this.hashPassword(refreshToken);
-
-    this.redis.set(userId, hashedToken);
+    this.redis.set(userId, refreshToken);
 
     return { accessToken, refreshToken };
   }

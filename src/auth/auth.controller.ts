@@ -17,6 +17,7 @@ import { AccessTokenGuard } from './guards/access.guard';
 import { Request } from 'express';
 import { JwtPayload } from './type/jwt.payload';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { RefreshTokenGuard } from './guards/refresh.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -28,6 +29,7 @@ export class AuthController {
     try {
       return await this.service.signin(body);
     } catch (e) {
+      this.logger.error(e);
       if (e instanceof AuthError) {
         this.logger.warn(`invalid credentials request`, { error: e });
         throw new BadRequestException('Invalid credentials');
@@ -66,5 +68,15 @@ export class AuthController {
   async me(@Req() req: Request) {
     const u = req.user as JwtPayload;
     return await this.service.account(u.id);
+  }
+
+  @Get('refresh')
+  @ApiBearerAuth()
+  @UseGuards(RefreshTokenGuard)
+  async refresh(@Req() req: Request) {
+    this.logger.log('user', { user: req.user });
+    const u = req.user as JwtPayload;
+    const token = req.user['refreshToken'];
+    return await this.service.refresh(u, token);
   }
 }

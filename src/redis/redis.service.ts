@@ -23,10 +23,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  async append(key: string, record: { key: string; value: string }) {
-    this.client.hSet(key, record);
-  }
-
   async set(key: string, value: string) {
     this.logger.verbose(`setting key`, {
       key,
