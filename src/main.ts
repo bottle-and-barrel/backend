@@ -11,7 +11,10 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const config = new DocumentBuilder().addBearerAuth().build();
+  const config = new DocumentBuilder()
+    .addSecurity('access', { type: 'http', scheme: 'bearer' })
+    .addSecurity('refresh', { type: 'http', scheme: 'bearer' })
+    .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/api/docs', app, document);
 

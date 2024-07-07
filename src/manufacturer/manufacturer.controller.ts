@@ -12,8 +12,10 @@ import { ManufacturerService } from './manufacturer.service';
 import { CreateManufacturerDto } from './dto/create-manufacturer.dto';
 import { UpdateManufacturerDto } from './dto/update-manufacturer.dto';
 import { NotFoundError } from 'src/lib/errors/notfound';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('manufacturer')
+@ApiTags('Производители')
 export class ManufacturerController {
   constructor(private readonly manufacturerService: ManufacturerService) {}
 

@@ -16,10 +16,11 @@ import { AuthError, AuthErrorCode } from './errors/auth.error';
 import { AccessTokenGuard } from './guards/access.guard';
 import { Request } from 'express';
 import { JwtPayload } from './type/jwt.payload';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RefreshTokenGuard } from './guards/refresh.guard';
 
 @Controller('auth')
+@ApiTags('Авторизация')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
   constructor(private readonly service: AuthService) {}
@@ -63,7 +64,7 @@ export class AuthController {
   }
 
   @Get('me')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access')
   @UseGuards(AccessTokenGuard)
   async me(@Req() req: Request) {
     const u = req.user as JwtPayload;
@@ -71,7 +72,7 @@ export class AuthController {
   }
 
   @Get('refresh')
-  @ApiBearerAuth()
+  @ApiBearerAuth('refresh')
   @UseGuards(RefreshTokenGuard)
   async refresh(@Req() req: Request) {
     this.logger.log('user', { user: req.user });

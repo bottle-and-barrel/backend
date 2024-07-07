@@ -26,10 +26,10 @@ services:
   bnb_redis:
     image: redis:7.2.4-alpine
     restart: always
-    ports:
-      - '${REDIS_PORT}:6379'
     env_file:
       - .env
+    ports:
+      - '${REDIS_PORT}:6379'
     volumes:
       - bnb_redis_data:/data
 
