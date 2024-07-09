@@ -5,6 +5,7 @@ import { ManufacturerModule } from './manufacturer/manufacturer.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { RedisModule } from './redis/redis.module';
+import { MinioModule } from './minio/minio.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { RedisModule } from './redis/redis.module';
     UsersModule,
     AuthModule,
     RedisModule,
+    MinioModule,
   ],
   controllers: [],
   providers: [PrismaModule],
