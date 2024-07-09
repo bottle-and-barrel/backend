@@ -64,7 +64,9 @@ export class AuthService {
     return tokens;
   }
 
-  async logout() {}
+  async logout(user: JwtPayload) {
+    return this.redis.clear(user.id);
+  }
 
   async account(userId: string) {
     const u = this.usersService.findOne(userId);

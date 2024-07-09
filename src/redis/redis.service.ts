@@ -33,7 +33,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async clear(key: string) {
     this.logger.verbose(`clear key`, { key });
-    return this.client.del(key);
+    return await this.client.del(key);
   }
 
   async get<T>(key: string): Promise<T> {

@@ -80,4 +80,12 @@ export class AuthController {
     const token = req.user['refreshToken'];
     return await this.service.refresh(u, token);
   }
+
+  @Get('logout')
+  @ApiBearerAuth('access')
+  @UseGuards(AccessTokenGuard)
+  async logout(@Req() req: Request) {
+    const u = req.user as JwtPayload;
+    return this.service.logout(u);
+  }
 }
